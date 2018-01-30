@@ -9,8 +9,8 @@ export const TopicList = (props) => (
         <Datagrid>
             <TextField source="id" />
             <TopicUrlField source="id" label="帖子链接"/>
-            <TextField source="name" />
-            <TextField source="content" />
+            <TextField source="name" label="名字" />
+            <TextField source="content" label="内容"/>
             <TextField source="summary" />
             <ImageField source="bannerImg" />
             <DateField source="beginTime" />
@@ -36,3 +36,32 @@ export const TopicListEdit = (props) => {
         </SimpleForm>
     </Edit>
 };
+
+
+export const TopicListCreate = (props) => (
+    <Create {...props}>
+        <SimpleForm>
+            <TextInput source="name" />
+            <TextInput source="summary" />
+            <TextInput source="detail" />
+            <TextInput source="content" />
+            <TextInput source="bannerImg" />
+            <TextInput source="shareTitle" />
+            <TextInput source="shareWord" />
+            <TextInput source="shareImg" />
+            <TextInput source="detailTitle" />
+            <DateInput source="beginTime" format={(d)=>{
+                console.log(1,d);
+                return d;
+            }} parse={(d)=>{
+                return d?d.replace("T",' ').replace(/\.\d+Z/,''):d;
+            }}/>
+             <DateInput source="endTime" format={(d)=>{
+                console.log(1,d);
+                return d;
+            }} parse={(d)=>{
+                return d?d.replace("T",' ').replace(/\.\d+Z/,''):d;
+            }}/>
+        </SimpleForm>
+    </Create>
+);

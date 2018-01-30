@@ -24,19 +24,22 @@ const API_URL = '';
 const convertRESTRequestToHTTP = (type, resource, params) => {
     let url = '';
     const options = {};
+    if (!options.headers) {
+        options.headers = new Headers({ Accept: 'application/json' });
+    }
     switch (type) {
-        case GET_LIST: {
+        case GET_LIST: {//读取列表
             const { page, perPage } = params.pagination;
             // const { field, order } = params.sort;
             // 可以实现排序
             const query = {
-                offset: (page-1)*perPage,
-                limit:perPage
+                offset: (page - 1) * perPage,
+                limit: perPage
             };
             url = `${API_URL}/${resource}/list.json?${stringify(query)}`;
             break;
         }
-        case GET_ONE:
+        case GET_ONE://编辑时候进入时使用
             url = `${API_URL}/${resource}/list.json?offset=0&limit=1000000`;
             break;
         // case GET_MANY: {
@@ -57,41 +60,28 @@ const convertRESTRequestToHTTP = (type, resource, params) => {
         //     url = `${API_URL}/${resource}?${stringify(query)}`;
         //     break;
         // }
-        case UPDATE:
+        case UPDATE://修改时候使用
             url = `${API_URL}/${resource}/mod.json`;
             options.method = 'POST';
-            // let data=new FormData()
-            // Object.keys(params.data).forEach(v=>{
-            //     data.append(v,params.data[v]);
-            // })
-
-            let data=Object.keys(params.data).map(v=>{
-                return params.data[v]?`${v}=${encodeURIComponent(params.data[v]||'')}`:''
-            }).join("&");
-
-            options.body =data;
-            if (!options.headers) {
-                options.headers = new Headers({ Accept: 'application/json' });
-            }
-            options.headers.append('Content-Type','application/x-www-form-urlencoded; charset=utf-8');
+            options.body = stringify(params.data);
+            options.headers.append('Content-Type', 'application/x-www-form-urlencoded; charset=utf-8');
             break;
-        // case CREATE:
-        //     url = `${API_URL}/${resource}`;
-        //     options.method = 'POST';
-        //     options.body = JSON.stringify(params.data);
-        //     break;
-        // case DELETE:
-        //     url = `${API_URL}/${resource}/${params.id}`;
-        //     options.method = 'DELETE';
-        //     break;
+            case CREATE://创建使用
+            options.method = 'POST';
+            url = `${API_URL}/${resource}/add.json`;
+            options.body = stringify(params.data);
+            options.headers.append('Content-Type', 'application/x-www-form-urlencoded; charset=utf-8');
+            break;
+        case DELETE://删除使用
+            url = `${API_URL}/${resource}/${params.id}`;
+            options.method = 'DELETE';
+            break;
         default:
             throw new Error(`Unsupported fetch action type ${type}`);
     }
-    if (!options.headers) {
-        options.headers = new Headers({ Accept: 'application/json' });
-    }
+
     // add your own headers here
-    options.credentials='include';
+    options.credentials = 'include';
     return { url, options };
 };
 
@@ -108,11 +98,11 @@ const convertHTTPResponseToREST = (response, type, resource, params) => {
         case GET_LIST:
             return {
                 data: json.data.datas,
-                total: json.data.totalCount,
+                total: json.data.totalCount
             };
-        case GET_ONE:
+        case GET_ONE://适配为前端检索某一条
             return {
-                data:_.find(json.data.datas,{id:parseInt(params.id)})
+                data: _.find(json.data.datas, { id: parseInt(params.id) })
             }
         case CREATE:
             return { data: { ...params.data, id: json.id } };
